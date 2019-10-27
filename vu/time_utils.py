@@ -24,7 +24,7 @@ log = getLogger(__name__)
 class TimeUtils():
 
     @staticmethod
-    def str_to_date(date_string):
+    def str_to_date(date_string, default=False):
         if type(date_string) == datetime.date:
             return date_string
 
@@ -35,20 +35,24 @@ class TimeUtils():
             return datetime.datetime(*time.strptime(str(date_string)[:10], "%Y-%m-%d")[:6]).date()
         except Exception as e:
             log.error(e, exc_info=True)
-            return False
+            return default
 
 
     @staticmethod
-    def str_to_datetime(date_string):
+    def str_to_datetime(date_string, time_part = ' 00:00:00', default=False):
         if type(date_string) == datetime.datetime:
             return date_string
 
+        l = len(date_string)
+        if l < 19:
+            r = 19-l
+            date_string = date_string+time_part[r:]
+
         try:
-            print time.strptime(str(date_string)[:19], "%Y-%m-%d %H:%M:%S")
             return datetime.datetime.strptime(str(date_string)[:19], "%Y-%m-%d %H:%M:%S")
         except Exception as e:
             log.error(e)
-            return False
+            return default
 
 
     @staticmethod
