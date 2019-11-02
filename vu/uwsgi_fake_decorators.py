@@ -1,14 +1,10 @@
 def spool(func, *args,**kwargs):
     class Spooler():
-        @staticmethod
-        def spool(*args, **kwargs):
-            print('Called')
+        def spool(self, *args, **kwargs):
+            func(*args, **kwargs)
             return
     def wrapper():
-        print(func)
-        func(args, **kwargs)
-        return Spooler
-        # return func(args,**kwargs)
+        return Spooler()
     return wrapper()
 
 def timer(*outer_args,**outer_kwargs):
