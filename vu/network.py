@@ -3,11 +3,15 @@ __author__ = 'Vadim Kravciuk, vadim@kravciuk.com'
 
 import os
 import requests
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 from logging import getLogger
 log = getLogger(__file__)
+
+
+def get_remote_ip():
+    return
 
 
 class Download:
