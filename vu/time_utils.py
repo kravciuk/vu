@@ -47,7 +47,7 @@ class TimeUtils():
         l = len(date_string)
         if l < 19:
             r = 19-l
-            date_string = date_string+time_part[r:]
+            date_string = date_string+time_part[0-r:]
 
         try:
             return datetime.datetime.strptime(str(date_string)[:19], "%Y-%m-%d %H:%M:%S")
