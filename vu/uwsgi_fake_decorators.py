@@ -1,4 +1,4 @@
-def spool(func, *args,**kwargs):
+def spool(func=None, *args,**kwargs):
     class Spooler():
         def spool(self, *args, **kwargs):
             func(*args, **kwargs)
