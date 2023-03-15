@@ -4,7 +4,7 @@ __author__ = 'Vadim Kravciuk, vadim@kravciuk.com'
 import os
 import uuid
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.db.models import FileField, ImageField
 from django.contrib.auth import get_user_model
 
@@ -12,6 +12,33 @@ from logging import getLogger
 log = getLogger(__name__)
 
 User = get_user_model()
+
+
+def unique_file_name(dir_path, file_name):
+    if not os.path.exists("%s/%s" % (dir_path, file_name)):
+        return file_name
+    else:
+        _file, _ext = os.path.splitext(file_name)
+        i = 1
+        while os.path.exists("%s/%s_%s%s" % (dir_path, _file, str(i), _ext)):
+            i += 1
+        return "%s_%s%s" % (_file, str(i), _ext)
+
+
+def unique_slug(instance, slug_field, slug, counter=0, query=None):
+    if counter > 0:
+        test_slug = "%s_%s" % (slug, counter)
+    else:
+        test_slug = slug
+
+    rs = instance.objects.filter(**{slug_field: test_slug})
+    if query:
+        rs = rs.filter(**query)
+    if rs[:1]:
+        counter += 1
+        return unique_slug(instance, slug_field, slug, counter, query)
+    else:
+        return test_slug
 
 
 class UniqueFileField(FileField):

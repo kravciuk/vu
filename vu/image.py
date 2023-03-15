@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Vadim Kravciuk, vadim@kravciuk.com'
 
-from PIL import Image, ExifTags
+from PIL import Image, ExifTags, ImageOps
 
 from logging import getLogger
 log = getLogger(__name__)
@@ -10,36 +10,34 @@ log = getLogger(__name__)
 class VuImage:
 
     @staticmethod
-    def normalize_orientation(source):
-        try:
-            im = Image.open(source)
-            for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation] == 'Orientation':
-                    break
-            exif = dict(im._getexif().items())
+    def get_exif(image):
+        result = {}
+        if isinstance(image, str):
+            image = Image.open(image)
 
-            rotation = True
-            if exif[orientation] == 3:
-                image = im.rotate(180, expand=True)
-            elif exif[orientation] == 6:
-                image = im.rotate(270, expand=True)
-            elif exif[orientation] == 8:
-                image = im.rotate(90, expand=True)
-            else:
-                rotation = False
+        for k,v in image.getexif().items():
+            if k in ExifTags.TAGS:
+                k = ExifTags.TAGS[k]
+            result[k] = v
+        return result
 
-            if rotation is True:
-                image.save(source)
-                image.close()
-
-        except Exception as e:
-            log.debug("Orientation fix failed: %s" % e, exc_info=True)
 
     @staticmethod
-    def resize(source, maxsize=(1920, 1920), target=None):
+    def normalize_orientation(source, quality='web_high'):
+
+        image = Image.open(source)
+        exif = VuImage.get_exif(image)
+        if 'Orientation' in exif:
+            image = ImageOps.exif_transpose(image)
+            image.save(source, exif=image.getexif(), quality=quality)
+        image.close()
+
+
+    @staticmethod
+    def resize(source, maxsize=(1920, 1920), target=None, quality='web_high'):
         target = target or source
         im = Image.open(source)
         w, h = im.size
         if w > maxsize[0] or h > maxsize[1]:
             im.thumbnail(maxsize, Image.ANTIALIAS)
-            im.save(target)
+            im.save(target, quality=quality)
