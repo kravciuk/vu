@@ -1,30 +1,29 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Vadim Kravciuk, vadim@kravciuk.com'
 
-try:
-    import pygeoip2 as pygeoip
-    pygeoip_verision = 2
-except:
-    import pygeoip as pygeoip
-    pygeoip_verision = 1
+from django.contrib.gis.geoip2 import GeoIP2
 
 from logging import getLogger
 log = getLogger(__name__)
 
 
 class GeoIP:
-    def __init__(self, datafile):
-        if pygeoip_verision == 1:
-            self.gi = pygeoip.GeoIP(datafile)
+    ip_headers = ['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'HTTP_CF_CONNECTING_IP']
 
-    def country_code(self, default=None, ip=None):
-        if pygeoip_verision == 1:
-            try:
-                code = self.gi.country_code_by_addr(ip or self.ip)
-            except:
-                return default
+    def __init__(self, request):
+        self.gi = GeoIP2()
+        self.ip = GeoIP.get_client_ip(request)
+        self.ips = []
 
-        return code or default
+    @property
+    def country(self, default=None, ip=None):
+        try:
+            return self.gi.country(self.ip)
+        except:
+            return {
+               'country_code': None,
+               'country_name': None,
+            }
 
     @staticmethod
     def get_client_ip(request, get_version=False, only_remote_ip=False):
